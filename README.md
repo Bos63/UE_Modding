@@ -38,7 +38,7 @@ This is essential to <b>ANY</b> value changing.</br>
 - [Creating Pak Files](./BasicModding/UnrealPak.md) (`.pak` only)
 - [Creating IoStore Pak Files](./BasicModding/IoStorePacking.md) (`.pak`/`.utoc`/`.ucas`)
 - [Mod example - modifying Blueprint default values](./BasicModding/example1.md) (UE4)
-- [Editing IoStore Assets - retoc](./BasicModding/EditingIoStoreAssets.md) (`.pak`/`.utoc`/`.ucas`) ![new](https://img.shields.io/badge/←-NEW-brightgreen)   
+- [Editing IoStore Assets - retoc](./BasicModding/EditingIoStoreAssets.md) (`.pak`/`.utoc`/`.ucas`)
 
 ## Intermediate Modding
 Dummying/replacing Assets like textures, materials, static meshes, and SkeletalMeshes (such as characters). </br>
@@ -58,8 +58,8 @@ Dummying/replacing Assets like textures, materials, static meshes, and SkeletalM
 - [Introduction to Blueprint Dummying/Replication](./AdvancedModding/BpReplication.md)
 
 ### Blueprint Modding
-I won't be going into detail as that is where UnrealEngine4 experience comes in and this will cover the bare basics.</br>
-<b>Note:</b> If you're new to UE4 - just tinker with it, everything is on YouTube.
+I won't be going into detail as that is where Unreal Engine experience comes in and this will cover the bare basics.</br>
+<b>Note:</b> If you're new to UE - just tinker with it, everything is on YouTube.
 
 - [Working with a mod loader - UML/UE4SS/DML/NML](./BPModding/WorkingWithML.md)
 - [ModActor structure and lifecycle](./BPModding/ModActorLifeCycle.md)
@@ -68,6 +68,7 @@ I won't be going into detail as that is where UnrealEngine4 experience comes in 
 - [Config Variables - mod configurations](./BPModding/ConfigVariables.md)
 - [Custom Mod GameSaves](./BPModding/GameSaves.md)
 - [Mod Example - Custom logger (UserWidget)](./BPModding/CustomLogger.md) 
+- [Modding Default Objects](./BPModding/DefaultObjects.md) ![new](https://img.shields.io/badge/←-NEW-brightgreen)   
 
 ## Expert
 At this stage, you already know how to swap/modify any UAsset and do blueprints as your second language, YET looking for more advanced stuff to try.
