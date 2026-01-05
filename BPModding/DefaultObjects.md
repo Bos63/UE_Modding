@@ -76,7 +76,7 @@ I just have this code in a macro called `Get CDO`, but you can put this directly
 
 ![](../Media/TemplateObjects/CDO9.png)
 
-Essentially all it does, is it takes the object class path (e.g. `/Game/Code/Systems/OreDistributorConfig_BP.OreDistributorConfig_BP_C`), turns it into the one with `Default__` (e.g. `/Game/Code/Systems/OreDistributorConfig_BP.Default__OreDistributorConfig_BP_C`), then loads it (with blocking means it blocks the thread from continuing until the asset is loaded - you should do this otherwise if it loads asyncronously and it takes too long, your code changing the value might won't do anything) and returns the object reference.
+Essentially all it does, is it takes the object class path (e.g. `/Game/Code/Systems/OreDistributorConfig_BP.OreDistributorConfig_BP_C`), turns it into the one with `Default__` (e.g. `/Game/Code/Systems/OreDistributorConfig_BP.Default__OreDistributorConfig_BP_C`), then loads it (with "blocking" means it blocks the thread from continuing until the asset is loaded - you should do this otherwise if it loads asynchronously and it takes too long, your code changing the value might not do anything) and returns the object reference.
 
 ![](../Media/TemplateObjects/CDO8.png)
 
@@ -133,7 +133,7 @@ After:
 The reason I'm showing the fast floor (stone path) in the construction mode, is to show that since we have edited the template, when the stone path is selected for construction, the object created for construction mode is using the template.
 
 > [!NOTE]
-> The alternative solution would be the crude method of getting all actors instances in the world and modifying the mesh on each one - but this would need to be repeated every time a new actor is created in the world, which could cause a massive performance hit dependong on what is being done and how many actors are being changed.
+> The alternative solution would be the crude method of getting all actors instances in the world and modifying the mesh on each one - but this would need to be repeated every time a new actor is created in the world, which could cause a massive performance hit depending on what is being done and how many actors are being changed.
 
 ## Modding Default Subobjects
 
