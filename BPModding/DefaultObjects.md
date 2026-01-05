@@ -64,7 +64,7 @@ If we want to edit any other property type, we can use the `Set <type> (by ref)`
 So now we can see that the `config.NonOreYield` is 100!
 
 > [!CAUTION]
-> If the value is changed but it doesn't appear to "work", it is likely that the default value of the object is being used before your mod is changing it. For example in the above example, the CDO is being used to initialise defaults in a core game system before mods are even initialised, so this change doesn't actually take effect in the game. However, if you or the game uses the CDO anytime after the mod is initialised, the changed value will be used.
+> If the value is changed but it doesn't appear to "work", it is likely that the default value of the object is being used before your mod is changing it. For example in the above example, the CDO is being used to initialise defaults in a core game system before mods are even initialised, so this change doesn't actually take effect in the game. However, if you or the game uses the CDO anytime after the mod is initialised, the changed value will be used. Please read on to the [object lifetime](#object-lifetime) section to fix this problem.
 
 ### Method 2
 
