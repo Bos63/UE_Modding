@@ -68,7 +68,7 @@ I won't be going into detail as that is where Unreal Engine experience comes in 
 - [Config Variables - mod configurations](./BPModding/ConfigVariables.md)
 - [Custom Mod GameSaves](./BPModding/GameSaves.md)
 - [Mod Example - Custom logger (UserWidget)](./BPModding/CustomLogger.md) 
-- [Modding Default Objects](./BPModding/DefaultObjects.md) ![new](https://img.shields.io/badge/←-NEW-brightgreen)   
+- [Modding Archetypes (Class Default Objects, Component Templates & Default Subobjects)](./BPModding/DefaultObjects.md) ![new](https://img.shields.io/badge/←-NEW-brightgreen)   
 
 ## Expert
 At this stage, you already know how to swap/modify any UAsset and do blueprints as your second language, YET looking for more advanced stuff to try.
