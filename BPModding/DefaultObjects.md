@@ -156,3 +156,48 @@ It's all basically the same as before, but just noting we need the `Default__<ba
 So now the default subobject `BackgroundColor` is modified successfully:
 
 ![](../Media/Archetypes/DS2.png)
+
+## Object Lifetime
+
+If you modify an archetype that is on an asset object (i.e. not a native `/Script/` class), the value is garbage collected (GC'd) when the level changes or on other certain game instance events.
+
+What this means is, if you modify a CDO or component template on let's say, a blueprint in the main menu of a game, then the modification is reset back to how it is set in the asset when a level is loaded - effectively revoking your modification until you do it again.
+
+This is bad because ideally we want to keep our edits all the time. If we don't, and the mod does not load early enough before certain game systems that we need to modify defaults for, then the modifications won't do anything. 
+
+So if we can change the defaults as early as possible on game instance initialisation (or in the main menu) and keep those modifications through level load, then the newly created objects will still use those modifications.
+
+There is good news and bad news. The good news is, `GameInstance` has a property called `ReferencedObjects` which stores a list of hard object references that won't be GC'd. The bad news is that this property is not marked Visible or BlueprintReadWrite so we have to use some tricks to get at it.
+
+![](../Media/Archetypes/Lifetime.png)
+
+Using one of the tricks below (depending on the engine version you are on), simply add the object to the `ReferencedObjects` array. 
+
+I don't have it inside of the macro because it may be that sometimes you _don't_ want to persist objects you changed between levels. Though this could be a bool option on the macro, it doesn't really matter how you implement it.
+
+> [!NOTE]
+> Remember this is only the case on asset objects, not native ones, so you shouldn't need to do this when modifying archetypes on native classes.
+
+### UE4
+
+In UE4, simply copy and past the following kismet into your editor to get the variable:
+
+```
+Begin Object Class=/Script/BlueprintGraph.K2Node_VariableGet Name="K2Node_VariableGet_3"
+   VariableReference=(MemberParent=Class'"/Script/Engine.GameInstance"',MemberName="ReferencedObjects")
+   SelfContextInfo=NotSelfContext
+   NodePosX=688
+   NodePosY=224
+   NodeGuid=CB4818F84C2F00E9C6031387C6D5EF57
+End Object
+```
+
+Then connect it up to `Get Game Instance` and add your object reference to the `ReferencedObjects` array.
+
+### UE5
+
+Sadly in UE5, Epic "fixed" this method so you can't just do this anymore, as it will fail to compile with the error that the property is not blueprint visible. 😭
+
+So the only way to get access to it right now, is to do an engine edit to mark it `Visible` and `BlueprintReadWrite` and build the engine change yourself. 
+
+Hopefully in the future we will have tooling to help us modify access transformers at the project level without having to modify engine.
