@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UAssetGUI Admin Key Panel</title>
+  <style>
+    body { font-family: Arial; background:#101226; color:#fff; margin:0; padding:24px; }
+    .card { background:#1a1f3a; border-radius:10px; padding:16px; margin-bottom:16px; }
+    input, button { padding:10px; margin:6px; border-radius:6px; border:0; }
+    button { background:#00AEEF; color:#fff; cursor:pointer; }
+    .danger { background:#FF3B30; }
+  </style>
+</head>
+<body>
+  <h1>UAssetGUI Key Yönetim Paneli</h1>
+  <div class="card">
+    <input id="adminToken" placeholder="Admin token (x-admin-token)" />
+    <input id="key" placeholder="Yeni key" />
+    <input id="userName" placeholder="Kullanıcı adı" />
+    <input id="tier" placeholder="Paket (premium)" value="premium" />
+    <input id="expiresAt" placeholder="Bitiş tarihi (2026-12-31T00:00:00Z)" />
+    <button onclick="addKey()">Key Ekle</button>
+  </div>
+  <div class="card">
+    <button onclick="loadKeys()">Keyleri Yenile</button>
+    <ul id="list"></ul>
+  </div>
+  <script>
+    const api = '/api/admin';
+    async function loadKeys() {
+      const token = document.getElementById('adminToken').value;
+      const res = await fetch(`${api}/keys`, { headers: { 'x-admin-token': token } });
+      const data = await res.json();
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+      data.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `${item.key} | ${item.userName} | ${item.tier} | ${item.expiresAt || 'süresiz'}`;
+        const btn = document.createElement('button');
+        btn.textContent = 'Sil';
+        btn.className = 'danger';
+        btn.onclick = () => removeKey(item.key);
+        li.appendChild(btn);
+        list.appendChild(li);
+      });
+    }
+    async function addKey() {
+      const token = document.getElementById('adminToken').value;
+      await fetch(`${api}/keys`, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'x-admin-token': token },
+        body: JSON.stringify({
+          key: document.getElementById('key').value,
+          userName: document.getElementById('userName').value,
+          tier: document.getElementById('tier').value,
+          expiresAt: document.getElementById('expiresAt').value || null
+        })
+      });
+      loadKeys();
+    }
+    async function removeKey(key) {
+      const token = document.getElementById('adminToken').value;
+      await fetch(`${api}/keys/${encodeURIComponent(key)}`, { method:'DELETE', headers:{ 'x-admin-token': token } });
+      loadKeys();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+*.iml
+.gradle/
+local.properties
+.idea/
+/build/
+/captures/
+.DS_Store
+
+# Build outputs (never commit generated binaries)
+**/build/
+*.apk
+*.aab
+*.apks
+*.keystore
+*.jks
+
+# Wrapper binary policy for this repo
+gradle/wrapper/gradle-wrapper.jar
