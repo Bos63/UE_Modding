@@ -1,11 +1,17 @@
 package com.urzuasset.gui.ui.editor
 
+import android.app.AlertDialog
 import android.os.Bundle
-import android.view.View
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.urzuasset.gui.databinding.ActivityEditorBinding
+import com.urzuasset.gui.databinding.DialogEditNamemapBinding
+import com.urzuasset.gui.databinding.DialogEditValueBinding
+import com.urzuasset.gui.databinding.DialogExtraFunctionsBinding
+import com.urzuasset.gui.databinding.ItemNamemapEntryBinding
 import com.urzuasset.gui.storage.ProjectRepository
 
 class EditorActivity : AppCompatActivity() {
@@ -13,13 +19,9 @@ class EditorActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEditorBinding
     private var projectName: String = ""
 
-    private val treeAdapter = EditorTreeAdapter()
-    private val propertyAdapter = EditorPropertyAdapter()
-
-    private enum class EditorViewMode { TREE, PROPERTIES }
-
-    private var currentMode = EditorViewMode.TREE
-
+    private val propertyAdapter = EditorPropertyAdapter { row ->
+        showEditValueDialog(row)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,20 +37,33 @@ class EditorActivity : AppCompatActivity() {
             return
         }
 
-        supportActionBar?.title = "Editor • ${project.projectName}"
-        binding.filePairLabel.text = "Bağlı dosyalar:\n${project.uassetPath}\n${project.uexpPath}"
+        supportActionBar?.title = "UAssetGUI v2.0"
+        binding.filePairLabel.text = "Đang mở: ${project.uassetPath.substringAfterLast('/')}"
 
-        setupLists()
-        setupViewMode()
+        setupList()
 
         val propertyRows = if (project.content.isEmpty()) {
             defaultPropertyRows()
         } else {
             decodeRows(project.content)
         }
-
-        treeAdapter.submit(defaultTreeNodes())
         propertyAdapter.submit(propertyRows)
+
+        binding.searchInput.addTextChangedListener(SimpleTextWatcher {
+            propertyAdapter.filter(binding.searchInput.text?.toString().orEmpty())
+        })
+
+        binding.openFileButton.setOnClickListener {
+            Snackbar.make(binding.root, "OPEN FILE demo: ${project.uassetPath}", Snackbar.LENGTH_SHORT).show()
+        }
+
+        binding.dumpTxtButton.setOnClickListener {
+            Snackbar.make(binding.root, "Đã load ${propertyAdapter.snapshot().size} Properties", Snackbar.LENGTH_SHORT).show()
+        }
+
+        binding.extraFunctionButton.setOnClickListener {
+            showExtraFunctionsDialog()
+        }
 
         binding.saveButton.setOnClickListener {
             val snapshotBefore = encodeRows(propertyAdapter.snapshot())
@@ -57,90 +72,108 @@ class EditorActivity : AppCompatActivity() {
             project.content.addAll(snapshotBefore)
             Snackbar.make(binding.root, "Değişiklik kaydedildi", Snackbar.LENGTH_SHORT).show()
         }
-
-        binding.undoButton.setOnClickListener {
-            val previous = project.history.removeLastOrNull()
-            if (previous == null) {
-                Snackbar.make(binding.root, "Geri alınacak kayıt yok", Snackbar.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            project.content.clear()
-            project.content.addAll(previous)
-            propertyAdapter.submit(decodeRows(previous))
-            Snackbar.make(binding.root, "Önceki sürüm yüklendi", Snackbar.LENGTH_SHORT).show()
-        }
-
-        binding.previewButton.setOnClickListener {
-            val top5 = propertyAdapter.snapshot().take(5)
-                .joinToString("\n") { "${it.name} = ${it.value}" }
-            binding.previewOutput.text = "Canlı Önizleme:\n$top5"
-        }
     }
 
-
-
-    private fun setupViewMode() {
-        binding.treeTabButton.setOnClickListener {
-            setMode(EditorViewMode.TREE)
-        }
-
-        binding.propertyTabButton.setOnClickListener {
-            setMode(EditorViewMode.PROPERTIES)
-        }
-
-        setMode(EditorViewMode.TREE)
-    }
-
-    private fun setMode(mode: EditorViewMode) {
-        currentMode = mode
-
-        val treeVisible = mode == EditorViewMode.TREE
-        binding.treePanel.visibility = if (treeVisible) View.VISIBLE else View.GONE
-        binding.propertyPanel.visibility = if (treeVisible) View.GONE else View.VISIBLE
-
-        binding.treeTabButton.alpha = if (treeVisible) 1f else 0.65f
-        binding.propertyTabButton.alpha = if (treeVisible) 0.65f else 1f
-    }
-
-    private fun setupLists() {
-        binding.treeRecycler.layoutManager = LinearLayoutManager(this)
-        binding.treeRecycler.adapter = treeAdapter
-
+    private fun setupList() {
         binding.propertyRecycler.layoutManager = LinearLayoutManager(this)
         binding.propertyRecycler.adapter = propertyAdapter
     }
 
-    private fun defaultTreeNodes(): List<EditorTreeNode> = listOf(
-        EditorTreeNode("General Information"),
-        EditorTreeNode("Name Map"),
-        EditorTreeNode("Import Data"),
-        EditorTreeNode("Export Information"),
-        EditorTreeNode("Depends Map"),
-        EditorTreeNode("Export Data", highlighted = true),
-        EditorTreeNode("Export 1 (ExecuteUbergraph_BP_SMG)", indentLevel = 1),
-        EditorTreeNode("Export 6 (BP_SMG_C)", indentLevel = 1),
-        EditorTreeNode("Export 7 (Default_BP_SMG_C)", indentLevel = 1, highlighted = true),
-        EditorTreeNode("6 (114)", indentLevel = 2, highlighted = true),
-        EditorTreeNode("Extra Data (0 B)", indentLevel = 3)
-    )
+    private fun showExtraFunctionsDialog() {
+        val dialogBinding = DialogExtraFunctionsBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(this).setView(dialogBinding.root).create()
+
+        dialogBinding.compareUassetButton.setOnClickListener {
+            dialog.dismiss()
+            Snackbar.make(binding.root, "Compare UAsset hazırlandı", Snackbar.LENGTH_SHORT).show()
+        }
+        dialogBinding.compareUexpButton.setOnClickListener {
+            dialog.dismiss()
+            Snackbar.make(binding.root, "Compare UEXP hazırlandı", Snackbar.LENGTH_SHORT).show()
+        }
+        dialogBinding.editAimbotButton.setOnClickListener {
+            dialog.dismiss()
+            Snackbar.make(binding.root, "Edit Aimbot demo", Snackbar.LENGTH_SHORT).show()
+        }
+        dialogBinding.editNamemapButton.setOnClickListener {
+            dialog.dismiss()
+            showEditNamemapDialog()
+        }
+        dialogBinding.hexEditorButton.setOnClickListener {
+            dialog.dismiss()
+            Snackbar.make(binding.root, "Hex editor modülü eklenecek", Snackbar.LENGTH_SHORT).show()
+        }
+
+        dialog.show()
+    }
+
+    private fun showEditValueDialog(row: EditorPropertyRow) {
+        val dialogBinding = DialogEditValueBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(this).setView(dialogBinding.root).create()
+
+        dialogBinding.editValueTitle.text = "SỬA VALUE: ${row.name}"
+        dialogBinding.editValueInput.setText(row.value)
+
+        dialogBinding.cancelEditButton.setOnClickListener { dialog.dismiss() }
+        dialogBinding.saveEditButton.setOnClickListener {
+            row.value = dialogBinding.editValueInput.text?.toString().orEmpty()
+            propertyAdapter.submit(propertyAdapter.snapshot())
+            dialog.dismiss()
+            Snackbar.make(binding.root, "${row.name} güncellendi", Snackbar.LENGTH_SHORT).show()
+        }
+
+        dialog.show()
+    }
+
+    private fun showEditNamemapDialog() {
+        val dialogBinding = DialogEditNamemapBinding.inflate(layoutInflater)
+        val dialog = AlertDialog.Builder(this).setView(dialogBinding.root).create()
+
+        val allEntries = defaultNamemapEntries()
+        val adapter = NameMapAdapter(allEntries.toMutableList())
+        dialogBinding.namemapRecycler.layoutManager = LinearLayoutManager(this)
+        dialogBinding.namemapRecycler.adapter = adapter
+
+        dialogBinding.namemapSearch.addTextChangedListener(SimpleTextWatcher {
+            val q = dialogBinding.namemapSearch.text?.toString().orEmpty().trim().lowercase()
+            val filtered = if (q.isEmpty()) allEntries else allEntries.filter { it.lowercase().contains(q) }
+            adapter.submit(filtered)
+            dialogBinding.namemapTitle.text = "EDIT NAMEMAP (${filtered.size})"
+        })
+
+        dialogBinding.closeNamemapButton.setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
+    }
 
     private fun defaultPropertyRows(): List<EditorPropertyRow> = listOf(
-        EditorPropertyRow(52, "ProjectileClass", "ObjectProperty", "-57", "RifleProjectile_C"),
-        EditorPropertyRow(53, "MeleeProjectileClass", "ObjectProperty", "-56", "MeleeProjectile_C"),
-        EditorPropertyRow(54, "MeleeDamage", "FloatProperty", "", "48"),
-        EditorPropertyRow(55, "MeleeHeadshotDamageMultiplier", "FloatProperty", "", "2"),
-        EditorPropertyRow(56, "MeleeDamageType", "ObjectProperty", "-54", "DT_Melee_C"),
-        EditorPropertyRow(57, "MeleeDelay", "FloatProperty", "", "0.15"),
-        EditorPropertyRow(58, "MeleeCooldown", "FloatProperty", "", "0.4"),
-        EditorPropertyRow(59, "MaxAmmo", "IntProperty", "", "200"),
-        EditorPropertyRow(60, "AmmoType", "EnumProperty", "", "EAmmoType"),
-        EditorPropertyRow(61, "WeaponCustomizationCategories", "ArrayProperty", "StructProperty", ""),
-        EditorPropertyRow(64, "AmmoPerClip", "IntProperty", "", "50"),
-        EditorPropertyRow(65, "Damage", "FloatProperty", "", "10")
+        EditorPropertyRow(0, "0x9AF", "ReloadingCDMax", "Float", "2.2"),
+        EditorPropertyRow(1, "0x9FD", "TargetArmLength_30_200...", "Float", "210"),
+        EditorPropertyRow(2, "0xA1A", "LagSpeed_34_CBFA2960...", "Float", "100"),
+        EditorPropertyRow(3, "0xAB9", "DefaultCapsuleRadius", "Float", "30"),
+        EditorPropertyRow(4, "0xC23", "Fov", "Float", "0"),
+        EditorPropertyRow(5, "0xC40", "Scale", "Float", "0"),
+        EditorPropertyRow(6, "0xC5D", "Offset", "Float", "0"),
+        EditorPropertyRow(7, "0xCB3", "Fov", "Float", "0"),
+        EditorPropertyRow(8, "0xCD0", "Scale", "Float", "0"),
+        EditorPropertyRow(9, "0xCED", "Offset", "Float", "0"),
+        EditorPropertyRow(10, "0xDB2", "HaveToOpenHeightToGro...", "Float", "40000"),
+        EditorPropertyRow(11, "0xEE8", "ProbeSize", "Float", "15")
+    )
+
+    private fun defaultNamemapEntries(): List<String> = listOf(
+        "[0] /Game/Arts/PhysicalMaterial/PhysicalMaterial_Flesh",
+        "[1] /Game/Arts/UI/NoAtlas/AQ_Icon_xuanzhong_Curve",
+        "[2] /Game/Arts/UI/NoAtlas/AQ_Icon_xuanzhong_Mat",
+        "[3] /Game/Arts_Effect/Materials/mesh/M_PostProcess_hurt_blue_01_Inst",
+        "[4] /Game/Arts_Effect/Materials/mesh/M_PostProcess_hurt_blue_01_Inst.M_PostProcess_hurt_blue_01_Inst",
+        "[5] /Game/Arts_Effect/Materials/mesh/M_PvePoison_Hurt01_Inst",
+        "[6] /Game/Arts_Effect/Materials/mesh/M_PvePoison_Hurt02_Inst",
+        "[7] /Game/Arts_Effect/Materials/mesh/M_PvePoison_Hurt03_Inst"
     )
 
     private fun encodeRows(rows: List<EditorPropertyRow>): List<String> {
-        return rows.map { "${it.index}|${it.name}|${it.type}|${it.variant}|${it.value}" }
+        return rows.map { "${it.index}|${it.offsetHex}|${it.name}|${it.type}|${it.value}" }
     }
 
     private fun decodeRows(lines: List<String>): List<EditorPropertyRow> {
@@ -150,9 +183,9 @@ class EditorActivity : AppCompatActivity() {
             val index = chunks[0].toIntOrNull() ?: return@mapNotNull null
             EditorPropertyRow(
                 index = index,
-                name = chunks[1],
-                type = chunks[2],
-                variant = chunks[3],
+                offsetHex = chunks[1],
+                name = chunks[2],
+                type = chunks[3],
                 value = chunks.subList(4, chunks.size).joinToString("|")
             )
         }
@@ -162,4 +195,41 @@ class EditorActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_PROJECT_NAME = "extra_project_name"
     }
+}
+
+private class NameMapAdapter(
+    initial: MutableList<String>
+) : RecyclerView.Adapter<NameMapAdapter.NameMapViewHolder>() {
+
+    private val items = initial
+
+    fun submit(newItems: List<String>) {
+        items.clear()
+        items.addAll(newItems)
+        notifyDataSetChanged()
+    }
+
+    override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): NameMapViewHolder {
+        val binding = ItemNamemapEntryBinding.inflate(android.view.LayoutInflater.from(parent.context), parent, false)
+        return NameMapViewHolder(binding)
+    }
+
+    override fun onBindViewHolder(holder: NameMapViewHolder, position: Int) = holder.bind(items[position])
+
+    override fun getItemCount(): Int = items.size
+
+    class NameMapViewHolder(private val binding: ItemNamemapEntryBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(value: String) {
+            binding.entryPath.text = value
+            binding.entryMeta.text = "Unused / Class / Stru..."
+        }
+    }
+}
+
+private class SimpleTextWatcher(
+    private val onTextChanged: () -> Unit
+) : android.text.TextWatcher {
+    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+    override fun afterTextChanged(s: android.text.Editable?) = onTextChanged()
 }

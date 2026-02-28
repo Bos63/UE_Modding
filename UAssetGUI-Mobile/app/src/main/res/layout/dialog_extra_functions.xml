@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="14dp"
+    android:background="#FFFFFF">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="EXTRA FUNCTION"
+        android:textColor="#D73A3A"
+        android:textSize="34sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="12dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/compareUassetButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="COMPARE UASSET"
+        android:backgroundTint="#D6ECF9"
+        android:textColor="#3D8CC2" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/compareUexpButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="COMPARE UEXP"
+        android:backgroundTint="#E4F5E4"
+        android:textColor="#4AA15A"
+        android:layout_marginTop="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/editAimbotButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="EDIT AIMBOT"
+        android:backgroundTint="#F0E2F3"
+        android:textColor="#B24ABA"
+        android:layout_marginTop="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/editNamemapButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="EDIT NAMEMAP"
+        android:backgroundTint="#F8EFD8"
+        android:textColor="#CB9D2B"
+        android:layout_marginTop="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/hexEditorButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="HEX EDITOR"
+        android:backgroundTint="#EEF0F3"
+        android:textColor="#555E6A"
+        android:layout_marginTop="8dp" />
+</LinearLayout>

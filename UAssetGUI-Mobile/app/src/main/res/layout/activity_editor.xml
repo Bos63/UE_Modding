@@ -2,188 +2,159 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F2F4F7"
     android:orientation="vertical"
-    android:padding="10dp">
+    android:padding="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:gravity="center"
+            android:text="🌙"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/headerTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="UAssetGUI v2.0"
+            android:textColor="#C42020"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:gravity="center"
+            android:text="☠"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/openFileButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="OPEN FILE"
+            android:backgroundTint="#0EA5A3" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/dumpTxtButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="DUMP TXT"
+            android:backgroundTint="#2384E8" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/filePairLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:textColor="#0A7F7D"
         android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/searchInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="🔍 Property ara..."
+        android:singleLine="true"
+        android:background="#FFFFFF"
+        android:padding="10dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:orientation="horizontal">
+        android:background="#EAF0F4"
+        android:orientation="horizontal"
+        android:paddingVertical="8dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/treeTabButton"
-            style="@style/Widget.Material3.Button.TonalButton"
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Asset Tree" />
+            android:layout_weight="0.22"
+            android:paddingStart="8dp"
+            android:text="OFFSET"
+            android:textColor="#128E89"
+            android:textStyle="bold" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/propertyTabButton"
-            style="@style/Widget.Material3.Button.TonalButton"
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1"
-            android:text="Properties" />
+            android:layout_weight="0.43"
+            android:text="NAME MAP"
+            android:textColor="#128E89"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.15"
+            android:text="TYPE"
+            android:textColor="#128E89"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.20"
+            android:text="VALUE"
+            android:textColor="#128E89"
+            android:textStyle="bold" />
     </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/editorContentHost"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/propertyRecycler"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="8dp">
-
-        <LinearLayout
-            android:id="@+id/treePanel"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#101522"
-            android:orientation="vertical"
-            android:padding="8dp">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Export / NameMap / ImportData"
-                android:textColor="#BBD2FF"
-                android:textSize="12sp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/treeRecycler"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:layout_marginTop="6dp"
-                android:scrollbars="vertical" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/propertyPanel"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#0B1020"
-            android:orientation="vertical"
-            android:padding="8dp"
-            android:visibility="gone">
-
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:fillViewport="true">
-
-                <LinearLayout
-                    android:layout_width="720dp"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="#1C2A44"
-                        android:orientation="horizontal"
-                        android:paddingVertical="6dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="0.12"
-                            android:paddingHorizontal="4dp"
-                            android:text="#"
-                            android:textColor="#D6E4FF"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="0.33"
-                            android:paddingHorizontal="4dp"
-                            android:text="Name"
-                            android:textColor="#D6E4FF"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="0.23"
-                            android:paddingHorizontal="4dp"
-                            android:text="Type"
-                            android:textColor="#D6E4FF"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="0.15"
-                            android:paddingHorizontal="4dp"
-                            android:text="Variant"
-                            android:textColor="#D6E4FF"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="0.27"
-                            android:paddingHorizontal="4dp"
-                            android:text="Value"
-                            android:textColor="#D6E4FF"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/propertyRecycler"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:scrollbars="vertical" />
-                </LinearLayout>
-            </HorizontalScrollView>
-        </LinearLayout>
-    </FrameLayout>
+        android:layout_marginTop="4dp"
+        android:scrollbars="vertical" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="6dp"
         android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/extraFunctionButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="EXTRA FUNCTION"
+            android:backgroundTint="#C42020" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/saveButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Kaydet" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/undoButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Geri Al" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/previewButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Canlı Önizleme" />
+            android:layout_marginStart="8dp"
+            android:text="KAYDET"
+            android:backgroundTint="#2E9E40" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/previewOutput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:maxLines="4"
-        android:text="Canlı Önizleme:" />
 
 </LinearLayout>
