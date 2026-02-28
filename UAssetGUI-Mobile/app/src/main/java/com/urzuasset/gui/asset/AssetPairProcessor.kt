@@ -1,138 +1,216 @@
 package com.urzuasset.gui.asset
 
-import java.io.File
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
-private const val CHUNK_SIZE = 16
+private val KNOWN_TYPES = listOf(
+    "BoolProperty",
+    "IntProperty",
+    "FloatProperty",
+    "StrProperty",
+    "NameProperty",
+    "ArrayProperty",
+    "StructProperty"
+)
 
 data class AssetLineRecord(
     val index: Int,
-    val displayOffset: String,
+    val offsetHex: String,
     val nameMapValue: String,
     val type: String,
-    val value: String,
-    val sourceFilePath: String,
-    val absoluteOffset: Int,
-    val reservedLength: Int
+    val value: String
 )
 
 data class AssetPairData(
+    val baseName: String,
+    val uassetName: String,
+    val uexpName: String,
+    val ubulkName: String?,
     val records: List<AssetLineRecord>,
     val nameMapEntries: List<String>,
-    val uassetFile: File,
-    val uexpFile: File
+    val warnings: List<String>,
+    val summaryLines: List<String>
 )
 
 object AssetPairProcessor {
 
-    fun loadPair(uassetFile: File, uexpFile: File): AssetPairData {
-        val uassetBytes = uassetFile.readBytes()
-        val uexpBytes = uexpFile.readBytes()
+    fun loadPair(
+        baseName: String,
+        uassetName: String,
+        uassetBytes: ByteArray,
+        uexpName: String,
+        uexpBytes: ByteArray,
+        ubulkName: String? = null,
+        ubulkBytes: ByteArray? = null
+    ): AssetPairData {
+        val summary = mutableListOf<String>()
+        val warnings = mutableListOf<String>()
 
-        val uassetStrings = extractStrings(uassetBytes)
-        val uexpStrings = extractStrings(uexpBytes)
-        val nameMap = (uassetStrings.map { it.text } + uexpStrings.map { it.text }).distinct().sorted()
+        val header = parseHeader(uassetBytes)
+        summary += "Magic: 0x${header.magic.toString(16)}"
+        summary += "Version: ${header.version}"
+        summary += "NameCount: ${header.nameCount}"
+        summary += "NameOffset: 0x${header.nameOffset.toString(16)}"
 
-        val records = mutableListOf<AssetLineRecord>()
-        addRecords(records, uassetFile, uassetBytes, uassetStrings)
-        addRecords(records, uexpFile, uexpBytes, uexpStrings)
-
-        return AssetPairData(records = records, nameMapEntries = nameMap, uassetFile = uassetFile, uexpFile = uexpFile)
-    }
-
-    fun writeUpdatedValue(record: AssetLineRecord, newValue: String) {
-        val file = File(record.sourceFilePath)
-        val bytes = file.readBytes()
-        val encoded = newValue.toByteArray(StandardCharsets.UTF_8)
-        val fixed = ByteArray(record.reservedLength)
-        val copyLength = minOf(record.reservedLength, encoded.size)
-        System.arraycopy(encoded, 0, fixed, 0, copyLength)
-
-        if (record.absoluteOffset < 0 || record.absoluteOffset + record.reservedLength > bytes.size) {
-            throw IllegalStateException("Geçersiz dosya offset'i")
+        val names = parseNameMap(uassetBytes, header.nameOffset, header.nameCount)
+        if (names.isEmpty()) {
+            warnings += "NameMap okunamadı, ham tarama kullanıldı."
         }
 
-        val backup = File(file.parentFile, "${file.name}.bak")
-        if (!backup.exists()) {
-            backup.writeBytes(bytes)
+        val records = parseUexpProperties(uexpBytes, names.ifEmpty { fallbackNames(uexpBytes) })
+        if (records.any { it.type == "Raw/Unknown" }) {
+            warnings += "Bazı alanlar çözümlenemedi (Raw)."
         }
 
-        System.arraycopy(fixed, 0, bytes, record.absoluteOffset, record.reservedLength)
-        file.writeBytes(bytes)
-    }
-
-    fun writeDumpTxt(pairData: AssetPairData, outputFile: File) {
-        outputFile.parentFile?.mkdirs()
-        outputFile.bufferedWriter(StandardCharsets.UTF_8).use { writer ->
-            writer.appendLine("# Dump çıktısı")
-            writer.appendLine("# UAsset: ${pairData.uassetFile.absolutePath}")
-            writer.appendLine("# UEXP: ${pairData.uexpFile.absolutePath}")
-            pairData.records.forEach { line ->
-                writer.appendLine("${line.index}\t${line.displayOffset}\t${line.nameMapValue}\t${line.type}\t${line.value}")
-            }
+        ubulkBytes?.let {
+            summary += "UBULK: ${ubulkName ?: "(adsız)"} (${it.size} bytes)"
         }
+
+        return AssetPairData(
+            baseName = baseName,
+            uassetName = uassetName,
+            uexpName = uexpName,
+            ubulkName = ubulkName,
+            records = records,
+            nameMapEntries = names,
+            warnings = warnings,
+            summaryLines = summary
+        )
     }
 
-    private data class LocatedString(val text: String, val start: Int, val length: Int, val type: String)
+    private data class HeaderInfo(
+        val magic: Int,
+        val version: Int,
+        val nameCount: Int,
+        val nameOffset: Int
+    )
 
-    private fun addRecords(
-        target: MutableList<AssetLineRecord>,
-        sourceFile: File,
-        bytes: ByteArray,
-        locatedStrings: List<LocatedString>
-    ) {
-        val byOffset = locatedStrings.associateBy { it.start }
-        var localIndex = 0
-        var offset = 0
-        while (offset < bytes.size) {
-            val hit = byOffset[offset]
-            if (hit != null) {
-                target += AssetLineRecord(
-                    index = target.size,
-                    displayOffset = "${sourceFile.name}:0x${offset.toString(16)}",
-                    nameMapValue = hit.text,
-                    type = hit.type,
-                    value = hit.text,
-                    sourceFilePath = sourceFile.absolutePath,
-                    absoluteOffset = hit.start,
-                    reservedLength = hit.length
-                )
-                offset += hit.length
+    private fun parseHeader(bytes: ByteArray): HeaderInfo {
+        val bb = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
+        fun intAt(offset: Int): Int = if (offset + 4 <= bytes.size) bb.getInt(offset) else 0
+
+        val magic = intAt(0)
+        val version = intAt(8)
+
+        val candidates = listOf(
+            intAt(0x20) to intAt(0x24),
+            intAt(0x28) to intAt(0x2C),
+            intAt(0x38) to intAt(0x3C),
+            intAt(0x40) to intAt(0x44)
+        )
+        val picked = candidates.firstOrNull { (count, offset) ->
+            count in 1..1_000_000 && offset in 0 until bytes.size
+        } ?: (0 to 0)
+
+        return HeaderInfo(
+            magic = magic,
+            version = version,
+            nameCount = picked.first,
+            nameOffset = picked.second
+        )
+    }
+
+    private fun parseNameMap(bytes: ByteArray, nameOffset: Int, nameCount: Int): List<String> {
+        if (nameCount <= 0 || nameOffset !in bytes.indices) return emptyList()
+        val out = ArrayList<String>(nameCount)
+        val bb = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
+        var cursor = nameOffset
+
+        repeat(nameCount) {
+            if (cursor + 4 > bytes.size) return@repeat
+            val len = bb.getInt(cursor)
+            cursor += 4
+            if (len == 0) return@repeat
+
+            val name = if (len > 0) {
+                val byteLen = len
+                if (cursor + byteLen > bytes.size) return@repeat
+                val s = String(bytes, cursor, byteLen - 1, StandardCharsets.UTF_8)
+                cursor += byteLen
+                s
             } else {
-                val len = minOf(CHUNK_SIZE, bytes.size - offset)
-                val chunk = bytes.copyOfRange(offset, offset + len)
-                target += AssetLineRecord(
-                    index = target.size,
-                    displayOffset = "${sourceFile.name}:0x${offset.toString(16)}",
-                    nameMapValue = "(ham-kayıt-${localIndex++})",
-                    type = "HEX",
-                    value = chunk.joinToString(" ") { "%02X".format(it) },
-                    sourceFilePath = sourceFile.absolutePath,
-                    absoluteOffset = offset,
-                    reservedLength = len
-                )
-                offset += len
+                val charLen = -len
+                val byteLen = charLen * 2
+                if (cursor + byteLen > bytes.size) return@repeat
+                val s = String(bytes, cursor, byteLen - 2, Charset.forName("UTF-16LE"))
+                cursor += byteLen
+                s
+            }
+            out += name
+
+            if (cursor + 4 <= bytes.size) {
+                cursor += 4
             }
         }
+
+        return out.filter { it.isNotBlank() }.distinct()
     }
 
-    private fun extractStrings(bytes: ByteArray): List<LocatedString> {
-        val out = mutableListOf<LocatedString>()
+    private fun fallbackNames(bytes: ByteArray): List<String> {
+        val strings = mutableListOf<String>()
         var i = 0
         while (i < bytes.size) {
             val b = bytes[i].toInt() and 0xFF
             if (b in 32..126) {
-                val start = i
+                val s = i
                 while (i < bytes.size && ((bytes[i].toInt() and 0xFF) in 32..126)) i++
-                val len = i - start
+                val len = i - s
                 if (len >= 4) {
-                    val text = String(bytes, start, len, StandardCharsets.UTF_8)
-                    out += LocatedString(text = text, start = start, length = len, type = "UTF-8")
+                    strings += String(bytes, s, len, StandardCharsets.UTF_8)
                 }
             } else {
                 i++
             }
         }
-        return out
+        return strings.distinct().take(2000)
+    }
+
+    private fun parseUexpProperties(uexp: ByteArray, names: List<String>): List<AssetLineRecord> {
+        val rows = mutableListOf<AssetLineRecord>()
+        val nameSet = names.toSet()
+        var idx = 0
+        var offset = 0
+        while (offset + 8 < uexp.size) {
+            val preview = extractAscii(uexp, offset, 96)
+            val type = KNOWN_TYPES.firstOrNull { preview.contains(it) }
+            val pickedName = names.firstOrNull { it.length >= 3 && preview.contains(it) }
+
+            if (type != null && pickedName != null) {
+                val value = preview.substringAfter(type, "").trim().take(120)
+                rows += AssetLineRecord(
+                    index = idx++,
+                    offsetHex = "0x${offset.toString(16)}",
+                    nameMapValue = pickedName,
+                    type = type,
+                    value = if (value.isBlank()) "-" else value
+                )
+                offset += 32
+                continue
+            }
+
+            val chunk = uexp.copyOfRange(offset, minOf(offset + 16, uexp.size))
+            rows += AssetLineRecord(
+                index = idx++,
+                offsetHex = "0x${offset.toString(16)}",
+                nameMapValue = names.getOrNull(idx % maxOf(nameSet.size, 1)) ?: "Unknown",
+                type = "Raw/Unknown",
+                value = "(${chunk.size} bytes) ${chunk.joinToString(" ") { "%02X".format(it) }}"
+            )
+            offset += 16
+        }
+        return rows
+    }
+
+    private fun extractAscii(bytes: ByteArray, offset: Int, length: Int): String {
+        val end = minOf(bytes.size, offset + length)
+        if (offset >= end) return ""
+        val sb = StringBuilder(end - offset)
+        for (i in offset until end) {
+            val b = bytes[i].toInt() and 0xFF
+            if (b in 32..126) sb.append(b.toChar()) else sb.append(' ')
+        }
+        return sb.toString()
     }
 }

@@ -10,10 +10,7 @@ data class EditorLineRow(
     val offsetHex: String,
     val name: String,
     val type: String,
-    var value: String,
-    val sourceFilePath: String,
-    val absoluteOffset: Int,
-    val reservedLength: Int
+    val value: String
 )
 
 class EditorLineAdapter(
@@ -22,6 +19,10 @@ class EditorLineAdapter(
 
     private val allItems = mutableListOf<EditorLineRow>()
     private val items = mutableListOf<EditorLineRow>()
+
+    init {
+        setHasStableIds(true)
+    }
 
     fun submit(newItems: List<EditorLineRow>) {
         allItems.clear()
@@ -47,7 +48,12 @@ class EditorLineAdapter(
         notifyDataSetChanged()
     }
 
-    fun snapshot(): List<EditorLineRow> = allItems.map { it.copy() }
+    fun snapshot(): List<EditorLineRow> = allItems.toList()
+
+    override fun getItemId(position: Int): Long {
+        val item = items[position]
+        return (item.offsetHex + item.name + item.type).hashCode().toLong()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EditorLineViewHolder {
         val binding = ItemEditorLineRowBinding.inflate(LayoutInflater.from(parent.context), parent, false)
