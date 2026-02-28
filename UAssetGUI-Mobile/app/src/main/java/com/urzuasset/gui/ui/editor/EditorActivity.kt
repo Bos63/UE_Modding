@@ -2,17 +2,19 @@ package com.urzuasset.gui.ui.editor
 
 import android.app.AlertDialog
 import android.os.Bundle
-import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.urzuasset.gui.asset.ExportWriters
+import com.urzuasset.gui.asset.UnrealLocalizationProcessor
 import com.urzuasset.gui.databinding.ActivityEditorBinding
 import com.urzuasset.gui.databinding.DialogEditNamemapBinding
 import com.urzuasset.gui.databinding.DialogEditValueBinding
 import com.urzuasset.gui.databinding.DialogExtraFunctionsBinding
 import com.urzuasset.gui.databinding.ItemNamemapEntryBinding
 import com.urzuasset.gui.storage.ProjectRepository
+import java.io.File
 
 class EditorActivity : AppCompatActivity() {
 
@@ -54,11 +56,54 @@ class EditorActivity : AppCompatActivity() {
         })
 
         binding.openFileButton.setOnClickListener {
-            Snackbar.make(binding.root, "OPEN FILE demo: ${project.uassetPath}", Snackbar.LENGTH_SHORT).show()
+            val result = UnrealLocalizationProcessor.processFiles(project.uassetPath, project.uexpPath)
+            if (result.entries.isEmpty()) {
+                Snackbar.make(binding.root, "FText kaydı bulunamadı", Snackbar.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
+            val rows = result.entries.mapIndexed { index, entry ->
+                EditorPropertyRow(
+                    index = index,
+                    offsetHex = "0x${entry.byteOffset.toString(16)}",
+                    name = "${entry.namespace}.${entry.key}",
+                    type = "FText",
+                    value = entry.value
+                )
+            }
+            propertyAdapter.submit(rows)
+            Snackbar.make(
+                binding.root,
+                "${rows.size} FText satırı yüklendi${if (result.issues.isNotEmpty()) " (${result.issues.size} uyarı)" else ""}",
+                Snackbar.LENGTH_LONG
+            ).show()
         }
 
         binding.dumpTxtButton.setOnClickListener {
-            Snackbar.make(binding.root, "Đã load ${propertyAdapter.snapshot().size} Properties", Snackbar.LENGTH_SHORT).show()
+            val uassetFile = File(project.uassetPath)
+            val uexpFile = File(project.uexpPath)
+            if (!uassetFile.exists() || !uexpFile.exists()) {
+                Snackbar.make(binding.root, "UAsset/UEXP yolu geçersiz", Snackbar.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
+            val result = UnrealLocalizationProcessor.processFiles(project.uassetPath, project.uexpPath)
+            if (result.entries.isEmpty()) {
+                Snackbar.make(binding.root, "Dışa aktarılacak metin bulunamadı", Snackbar.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
+            val exportDir = File(getExternalFilesDir(null), "exports/${project.projectName}")
+            val txtFile = ExportWriters.writeTxt(result.entries, File(exportDir, "localization.txt"))
+            val locresFile = ExportWriters.writeLocresLike(result.entries, File(exportDir, "localization.locres"))
+            val uassetDump = ExportWriters.writeBinaryDump(uassetFile, File(exportDir, "uasset_dump.txt"))
+            val uexpDump = ExportWriters.writeBinaryDump(uexpFile, File(exportDir, "uexp_dump.txt"))
+
+            Snackbar.make(
+                binding.root,
+                "Export tamamlandı: ${txtFile.name}, ${locresFile.name}, ${uassetDump.name}, ${uexpDump.name}",
+                Snackbar.LENGTH_LONG
+            ).show()
         }
 
         binding.extraFunctionButton.setOnClickListener {

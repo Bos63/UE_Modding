@@ -43,3 +43,23 @@ cp local.properties.example local.properties
 
 ## Not
 Bu repo üretim seviyesi tam binary UAsset/UEXP editör motorunu değil, mobil mimari + key panel entegrasyon temelini sağlar.
+
+## UAsset/UEXP FText çıkarma + dump akışı (taslak)
+Editor ekranında iki temel akış eklendi:
+
+1. **OPEN FILE**
+   - UAsset + UEXP dosyalarını okur.
+   - UTF-8 ve UTF-16LE string bloklarını tarar.
+   - `NS=<namespace>;KEY=<key>;VAL=<value>` formatındaki metinleri FText satırı olarak listeler.
+   - Her `namespace::key` için ASCII ve Unicode CRC32 üretir.
+
+2. **DUMP TXT**
+   - FText kayıtlarını doğrular ve dışa aktarır.
+   - Çıktı dizini: `Android/data/<package>/files/exports/<projectName>/`
+   - Üretilen dosyalar:
+     - `localization.txt` (namespace bazlı düz metin)
+     - `localization.locres` (locres-benzeri binary taslak)
+     - `uasset_dump.txt` (ham byte dump, hex + ascii)
+     - `uexp_dump.txt` (ham byte dump, hex + ascii)
+
+> Not: Bu akış Unreal'ın resmi binary parser'ı değildir; mobilde hızlı doğrulama ve dışa aktarma için güvenli bir başlangıç taslağıdır.
