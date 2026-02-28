@@ -21,7 +21,7 @@ class KeyPanelApi(
             ).toRequestBody("application/json".toMediaType())
 
             val request = Request.Builder()
-                .url("${BuildConfig.KEY_PANEL_BASE_URL}/api/mobile/validate-key")
+                .url("${BuildConfig.KEY_PANEL_BASE_URL.trimEnd('/')}/api/mobile/validate-key")
                 .post(body)
                 .build()
 

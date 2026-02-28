@@ -39,7 +39,7 @@ cp local.properties.example local.properties
 ## Panel entegrasyonu
 - Mobil uygulama key doğrulamasını şu endpoint üzerinden yapar:
   - `BuildConfig.KEY_PANEL_BASE_URL + /api/mobile/validate-key`
-- Varsayılan değer `https://panel.com.tr` olarak ayarlıdır, gerekirse `app/build.gradle.kts` içinde değiştirin.
+- Varsayılan değer `https://urazpanel/uassetvip.com/` olarak ayarlıdır, gerekirse `app/build.gradle.kts` içinde değiştirin.
 
 ## Not
 Bu repo üretim seviyesi tam binary UAsset/UEXP editör motorunu değil, mobil mimari + key panel entegrasyon temelini sağlar.

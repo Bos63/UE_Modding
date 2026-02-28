@@ -3,40 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UAssetGUI Admin Key Panel</title>
+  <title>UAssetGUI Key Panel</title>
   <style>
-    body { font-family: Arial; background:#101226; color:#fff; margin:0; padding:24px; }
-    .card { background:#1a1f3a; border-radius:10px; padding:16px; margin-bottom:16px; }
-    input, button { padding:10px; margin:6px; border-radius:6px; border:0; }
+    body { font-family: Arial; background:#0f1222; color:#fff; margin:0; padding:20px; }
+    .card { background:#1a1f3a; border-radius:12px; padding:14px; margin-bottom:14px; }
+    input, select, button { padding:10px; margin:6px 4px; border-radius:8px; border:0; }
+    input, select { width: calc(100% - 8px); }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
     button { background:#00AEEF; color:#fff; cursor:pointer; }
     .danger { background:#FF3B30; }
+    .muted { color:#9fb0d5; font-size:12px; }
   </style>
 </head>
 <body>
-  <h1>UAssetGUI Key Yönetim Paneli</h1>
+  <h2>UAssetGUI Key Panel</h2>
   <div class="card">
-    <input id="adminToken" placeholder="Admin token (x-admin-token)" />
-    <input id="key" placeholder="Yeni key" />
-    <input id="userName" placeholder="Kullanıcı adı" />
-    <input id="tier" placeholder="Paket (premium)" value="premium" />
-    <input id="expiresAt" placeholder="Bitiş tarihi (2026-12-31T00:00:00Z)" />
-    <button onclick="addKey()">Key Ekle</button>
+    <input id="adminToken" placeholder="Admin token" />
+    <div class="row">
+      <select id="keyMode">
+        <option value="random">Random Key</option>
+        <option value="custom">Özel İsimli Key</option>
+      </select>
+      <input id="customKey" placeholder="Özel key (örn: URAZ-VIP-001)" />
+    </div>
+    <div class="row">
+      <select id="durationType" onchange="toggleCustomDays()">
+        <option value="hourly">Saatlik</option>
+        <option value="daily" selected>Günlük</option>
+        <option value="weekly">Haftalık</option>
+        <option value="monthly">Aylık</option>
+        <option value="custom_days">Özel Gün</option>
+      </select>
+      <input id="customDays" type="number" min="1" placeholder="Gün sayısı" style="display:none;" />
+    </div>
+    <button onclick="addKey()">Key Oluştur</button>
+    <p class="muted">Panel link (mobil için): https://urazpanel/uassetvip.com/</p>
   </div>
+
   <div class="card">
-    <button onclick="loadKeys()">Keyleri Yenile</button>
+    <button onclick="loadKeys()">Listeyi Yenile</button>
     <ul id="list"></ul>
   </div>
+
   <script>
     const api = '/api/admin';
+
+    function tokenHeader() {
+      return { 'x-admin-token': document.getElementById('adminToken').value };
+    }
+
+    function toggleCustomDays() {
+      const isCustom = document.getElementById('durationType').value === 'custom_days';
+      document.getElementById('customDays').style.display = isCustom ? 'block' : 'none';
+    }
+
     async function loadKeys() {
-      const token = document.getElementById('adminToken').value;
-      const res = await fetch(`${api}/keys`, { headers: { 'x-admin-token': token } });
+      const res = await fetch(`${api}/keys`, { headers: tokenHeader() });
       const data = await res.json();
       const list = document.getElementById('list');
       list.innerHTML = '';
-      data.forEach(item => {
+      (data || []).forEach(item => {
         const li = document.createElement('li');
-        li.textContent = `${item.key} | ${item.userName} | ${item.tier} | ${item.expiresAt || 'süresiz'}`;
+        li.textContent = `${item.key} | ${item.durationType} | Bitiş: ${item.expiresAt}`;
         const btn = document.createElement('button');
         btn.textContent = 'Sil';
         btn.className = 'danger';
@@ -45,23 +73,28 @@
         list.appendChild(li);
       });
     }
+
     async function addKey() {
-      const token = document.getElementById('adminToken').value;
+      const keyMode = document.getElementById('keyMode').value;
+      const durationType = document.getElementById('durationType').value;
+      const customDays = document.getElementById('customDays').value;
+
       await fetch(`${api}/keys`, {
-        method:'POST',
-        headers:{ 'Content-Type':'application/json', 'x-admin-token': token },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...tokenHeader() },
         body: JSON.stringify({
-          key: document.getElementById('key').value,
-          userName: document.getElementById('userName').value,
-          tier: document.getElementById('tier').value,
-          expiresAt: document.getElementById('expiresAt').value || null
+          randomKey: keyMode === 'random',
+          customKey: keyMode === 'custom' ? document.getElementById('customKey').value : '',
+          durationType,
+          customDays
         })
       });
+
       loadKeys();
     }
+
     async function removeKey(key) {
-      const token = document.getElementById('adminToken').value;
-      await fetch(`${api}/keys/${encodeURIComponent(key)}`, { method:'DELETE', headers:{ 'x-admin-token': token } });
+      await fetch(`${api}/keys/${encodeURIComponent(key)}`, { method: 'DELETE', headers: tokenHeader() });
       loadKeys();
     }
   </script>

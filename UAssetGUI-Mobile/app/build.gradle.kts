@@ -20,7 +20,7 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "KEY_PANEL_BASE_URL", '"https://panel.com.tr"')
+        buildConfigField("String", "KEY_PANEL_BASE_URL", '"https://urazpanel/uassetvip.com/"')
     }
 
     buildTypes {
