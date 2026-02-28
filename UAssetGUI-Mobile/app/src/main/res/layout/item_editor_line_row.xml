@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingVertical="10dp"
+        android:paddingEnd="6dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.22"
+            android:orientation="vertical"
+            android:paddingStart="8dp">
+
+            <TextView
+                android:id="@+id/rowIndex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#535353"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/rowOffset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#6D6D6D"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/rowName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.43"
+            android:textColor="#101010"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/rowType"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.15"
+            android:textColor="#1CA6BE" />
+
+        <TextView
+            android:id="@+id/rowValue"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.20"
+            android:textColor="#C38E2A"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E3E7EC" />
+
+</LinearLayout>

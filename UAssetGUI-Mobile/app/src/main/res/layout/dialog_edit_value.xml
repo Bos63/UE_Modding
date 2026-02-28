@@ -35,7 +35,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="HÜY"
+            android:text="İPTAL"
             android:backgroundTint="#DA3030" />
 
         <com.google.android.material.button.MaterialButton
@@ -43,7 +43,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="LƯU"
+            android:text="KAYDET"
             android:layout_marginStart="8dp"
             android:backgroundTint="#2E9E40" />
     </LinearLayout>

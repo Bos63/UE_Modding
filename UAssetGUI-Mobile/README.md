@@ -1,65 +1,23 @@
 # UAssetGUI Mobile (Android Studio)
 
-Bu proje Android Studio için düzenlenmiştir ve APK build almaya hazırdır.
+Bu sürümde uygulama **tek activity** olarak çalışır: `EditorActivity`.
 
-## Hedefler
-- Uygulama adı: **UAssetGUI**
-- Paket: `com.urzuasset.gui`
-- Min SDK: 24 (Android 7+)
-- Target/Compile SDK: 34 (Android 14)
-- Key doğrulanmadan uygulama içeriği açılamaz.
-- Modüler ekran yapısı:
-  - `LoginActivity` + `activity_login.xml`
-  - `MainActivity` + `activity_main.xml`
-  - `EditorActivity` + `activity_editor.xml`
+## Çalışma Klasörü
+Uygulama yalnızca şu klasör ile çalışır:
 
-## Repo politikası (binary)
-- Bu repoda build çıktıları (`.apk`, `.aab`, `build/`) commit edilmez.
-- `gradle/wrapper/gradle-wrapper.jar` de binary olduğu için repoya dahil edilmez.
-- Android Studio/terminal ortamında gerekirse wrapper jar yerelde yeniden üretilebilir.
+`/storage/emulated/0/Download/URAZMOD_UASSETGUİ`
 
-## Android Studio ile APK build
-1. Android Studio > **Open** > `UAssetGUI-Mobile` klasörünü açın.
-2. `local.properties.example` dosyasını `local.properties` olarak kopyalayın ve `sdk.dir` yolunu kendi Android SDK yolunuzla değiştirin.
-3. Gradle Sync tamamlandıktan sonra:
-   - Debug APK: **Build > Build APK(s)**
-   - Release APK/AAB: **Build > Generate Signed Bundle / APK**
-4. Çıktılar:
-   - Debug: `app/build/outputs/apk/debug/app-debug.apk`
-   - Release: `app/build/outputs/apk/release/`
+- `DOSYA AÇ`: Bu klasördeki `.uasset` dosyalarını listeler.
+- Eşleşen `.uexp` yoksa dosya açılmaz.
+- Dump çıktısı aynı klasöre `<orijinal_ad>_dump.txt` olarak yazılır.
 
-## Terminal ile APK build
-```bash
-cd UAssetGUI-Mobile
-cp local.properties.example local.properties
-# sdk.dir yolunu local.properties içinde güncelle
-./build-apk.sh
-```
+## Ekran Akışı
+- Uygulama açılır açılmaz editör ekranı gelir.
+- Login/Main ekranı yoktur.
+- Satır listesi gerçek dosya içeriğinden üretilir.
+- Satıra tıklayınca değer düzenlenebilir.
+- NameMap düzenleme, karşılaştırma ve HEX EDITOR menüden erişilir.
 
-## Panel entegrasyonu
-- Mobil uygulama key doğrulamasını şu endpoint üzerinden yapar:
-  - `BuildConfig.KEY_PANEL_BASE_URL + /api/mobile/validate-key`
-- Varsayılan değer `https://urazpanel/uassetvip.com/` olarak ayarlıdır, gerekirse `app/build.gradle.kts` içinde değiştirin.
-
-## Not
-Bu repo üretim seviyesi tam binary UAsset/UEXP editör motorunu değil, mobil mimari + key panel entegrasyon temelini sağlar.
-
-## UAsset/UEXP FText çıkarma + dump akışı (taslak)
-Editor ekranında iki temel akış eklendi:
-
-1. **OPEN FILE**
-   - UAsset + UEXP dosyalarını okur.
-   - UTF-8 ve UTF-16LE string bloklarını tarar.
-   - `NS=<namespace>;KEY=<key>;VAL=<value>` formatındaki metinleri FText satırı olarak listeler.
-   - Her `namespace::key` için ASCII ve Unicode CRC32 üretir.
-
-2. **DUMP TXT**
-   - FText kayıtlarını doğrular ve dışa aktarır.
-   - Çıktı dizini: `Android/data/<package>/files/exports/<projectName>/`
-   - Üretilen dosyalar:
-     - `localization.txt` (namespace bazlı düz metin)
-     - `localization.locres` (locres-benzeri binary taslak)
-     - `uasset_dump.txt` (ham byte dump, hex + ascii)
-     - `uexp_dump.txt` (ham byte dump, hex + ascii)
-
-> Not: Bu akış Unreal'ın resmi binary parser'ı değildir; mobilde hızlı doğrulama ve dışa aktarma için güvenli bir başlangıç taslağıdır.
+## Notlar
+- Düzenleme sırasında orijinal dosya için `.bak` yedek oluşturulur.
+- Büyük dosyalarda dump işlemi metin çıktısı üretir.

@@ -10,15 +10,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#FFFFFF"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="10dp"
-        android:gravity="center_vertical">
+        android:padding="10dp">
 
         <TextView
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:gravity="center"
-            android:text="🌙"
+            android:text="📁"
             android:textSize="20sp" />
 
         <TextView
@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="UAssetGUI v2.0"
+            android:text="UAssetGUI Editör"
             android:textColor="#C42020"
             android:textSize="24sp"
             android:textStyle="bold" />
@@ -36,7 +36,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:gravity="center"
-            android:text="☠"
+            android:text="🧩"
             android:textSize="20sp" />
     </LinearLayout>
 
@@ -51,8 +51,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="OPEN FILE"
-            android:backgroundTint="#0EA5A3" />
+            android:backgroundTint="#0EA5A3"
+            android:text="DOSYA AÇ" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/dumpTxtButton"
@@ -60,8 +60,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="DUMP TXT"
-            android:backgroundTint="#2384E8" />
+            android:backgroundTint="#2384E8"
+            android:text="METNE DÖK (TXT)" />
     </LinearLayout>
 
     <TextView
@@ -70,6 +70,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center"
+        android:text="Henüz dosya açılmadı"
         android:textColor="#0A7F7D"
         android:textStyle="bold" />
 
@@ -78,10 +79,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:hint="🔍 Property ara..."
-        android:singleLine="true"
         android:background="#FFFFFF"
-        android:padding="10dp" />
+        android:hint="🔍 Satır ara..."
+        android:padding="10dp"
+        android:singleLine="true" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -96,7 +97,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.22"
             android:paddingStart="8dp"
-            android:text="OFFSET"
+            android:text="SIRA / OFFSET"
             android:textColor="#128E89"
             android:textStyle="bold" />
 
@@ -104,7 +105,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.43"
-            android:text="NAME MAP"
+            android:text="NAMEMAP"
             android:textColor="#128E89"
             android:textStyle="bold" />
 
@@ -112,7 +113,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.15"
-            android:text="TYPE"
+            android:text="TİP"
             android:textColor="#128E89"
             android:textStyle="bold" />
 
@@ -120,23 +121,22 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.20"
-            android:text="VALUE"
+            android:text="DEĞER"
             android:textColor="#128E89"
             android:textStyle="bold" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/propertyRecycler"
+        android:id="@+id/lineRecycler"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="4dp"
-        android:scrollbars="vertical" />
+        android:background="#FFFFFF" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="8dp"
         android:orientation="horizontal">
 
         <com.google.android.material.button.MaterialButton
@@ -144,8 +144,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="EXTRA FUNCTION"
-            android:backgroundTint="#C42020" />
+            android:text="EKSTRA FONKSİYON"
+            android:backgroundTint="#AD49DF" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/saveButton"
@@ -154,7 +154,7 @@
             android:layout_weight="1"
             android:layout_marginStart="8dp"
             android:text="KAYDET"
-            android:backgroundTint="#2E9E40" />
+            android:backgroundTint="#2A9C3E" />
     </LinearLayout>
 
 </LinearLayout>

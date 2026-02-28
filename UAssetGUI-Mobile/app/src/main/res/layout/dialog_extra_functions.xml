@@ -10,9 +10,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="EXTRA FUNCTION"
+        android:text="EKSTRA FONKSİYON"
         android:textColor="#D73A3A"
-        android:textSize="34sp"
+        android:textSize="28sp"
         android:textStyle="bold"
         android:layout_marginBottom="12dp" />
 
@@ -20,7 +20,7 @@
         android:id="@+id/compareUassetButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="COMPARE UASSET"
+        android:text=".uasset Karşılaştır"
         android:backgroundTint="#D6ECF9"
         android:textColor="#3D8CC2" />
 
@@ -28,25 +28,16 @@
         android:id="@+id/compareUexpButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="COMPARE UEXP"
+        android:text=".uexp Karşılaştır"
         android:backgroundTint="#E4F5E4"
         android:textColor="#4AA15A"
-        android:layout_marginTop="8dp" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/editAimbotButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="EDIT AIMBOT"
-        android:backgroundTint="#F0E2F3"
-        android:textColor="#B24ABA"
         android:layout_marginTop="8dp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/editNamemapButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="EDIT NAMEMAP"
+        android:text="NameMap Düzenle"
         android:backgroundTint="#F8EFD8"
         android:textColor="#CB9D2B"
         android:layout_marginTop="8dp" />
@@ -58,5 +49,32 @@
         android:text="HEX EDITOR"
         android:backgroundTint="#EEF0F3"
         android:textColor="#555E6A"
+        android:layout_marginTop="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/editAimbotButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="AİMBOT 1"
+        android:backgroundTint="#F0E2F3"
+        android:textColor="#B24ABA"
+        android:layout_marginTop="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/sekmme2Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SEKMME 2"
+        android:backgroundTint="#F2F4F7"
+        android:textColor="#4F5F6F"
+        android:layout_marginTop="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/clorBody3Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CLOR BODY 3"
+        android:backgroundTint="#FFE8E8"
+        android:textColor="#C24C4C"
         android:layout_marginTop="8dp" />
 </LinearLayout>

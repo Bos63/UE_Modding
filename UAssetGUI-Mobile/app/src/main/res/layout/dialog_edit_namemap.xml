@@ -11,9 +11,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="EDIT NAMEMAP (2426)"
+        android:text="NAMEMAP DÜZENLE (0)"
         android:textColor="#D73A3A"
-        android:textSize="28sp"
+        android:textSize="24sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
 
@@ -21,7 +21,7 @@
         android:id="@+id/namemapSearch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="🔎 Tìm kiếm NAMEMAP..."
+        android:hint="🔎 NameMap ara..."
         android:background="#F3F4F7"
         android:padding="10dp" />
 
@@ -36,6 +36,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="ĐÓNG"
+        android:text="KAYDET"
         android:backgroundTint="#D73A3A" />
 </LinearLayout>
