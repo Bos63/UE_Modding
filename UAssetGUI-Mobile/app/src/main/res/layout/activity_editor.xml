@@ -13,15 +13,39 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:orientation="horizontal">
 
-        <LinearLayout
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/treeTabButton"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Asset Tree" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/propertyTabButton"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="Properties" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/editorContentHost"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp">
+
+        <LinearLayout
+            android:id="@+id/treePanel"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="0.38"
             android:background="#101522"
             android:orientation="vertical"
             android:padding="8dp">
@@ -29,9 +53,9 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Asset Tree"
-                android:textColor="#FFFFFF"
-                android:textStyle="bold" />
+                android:text="Export / NameMap / ImportData"
+                android:textColor="#BBD2FF"
+                android:textSize="12sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/treeRecycler"
@@ -43,75 +67,88 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:id="@+id/propertyPanel"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="0.62"
-            android:layout_marginStart="8dp"
             android:background="#0B1020"
             android:orientation="vertical"
-            android:padding="8dp">
+            android:padding="8dp"
+            android:visibility="gone">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#1C2A44"
-                android:orientation="horizontal"
-                android:paddingVertical="6dp">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.12"
-                    android:paddingHorizontal="4dp"
-                    android:text="#"
-                    android:textColor="#D6E4FF"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.33"
-                    android:paddingHorizontal="4dp"
-                    android:text="Name"
-                    android:textColor="#D6E4FF"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.23"
-                    android:paddingHorizontal="4dp"
-                    android:text="Type"
-                    android:textColor="#D6E4FF"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.15"
-                    android:paddingHorizontal="4dp"
-                    android:text="Variant"
-                    android:textColor="#D6E4FF"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.27"
-                    android:paddingHorizontal="4dp"
-                    android:text="Value"
-                    android:textColor="#D6E4FF"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/propertyRecycler"
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:scrollbars="vertical" />
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:layout_width="720dp"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#1C2A44"
+                        android:orientation="horizontal"
+                        android:paddingVertical="6dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.12"
+                            android:paddingHorizontal="4dp"
+                            android:text="#"
+                            android:textColor="#D6E4FF"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.33"
+                            android:paddingHorizontal="4dp"
+                            android:text="Name"
+                            android:textColor="#D6E4FF"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.23"
+                            android:paddingHorizontal="4dp"
+                            android:text="Type"
+                            android:textColor="#D6E4FF"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.15"
+                            android:paddingHorizontal="4dp"
+                            android:text="Variant"
+                            android:textColor="#D6E4FF"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.27"
+                            android:paddingHorizontal="4dp"
+                            android:text="Value"
+                            android:textColor="#D6E4FF"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/propertyRecycler"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:scrollbars="vertical" />
+                </LinearLayout>
+            </HorizontalScrollView>
         </LinearLayout>
-    </LinearLayout>
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -146,6 +183,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:maxLines="4"
         android:text="Canlı Önizleme:" />
 
 </LinearLayout>

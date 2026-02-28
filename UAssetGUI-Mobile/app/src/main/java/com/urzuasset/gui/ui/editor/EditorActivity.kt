@@ -1,6 +1,7 @@
 package com.urzuasset.gui.ui.editor
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
@@ -14,6 +15,11 @@ class EditorActivity : AppCompatActivity() {
 
     private val treeAdapter = EditorTreeAdapter()
     private val propertyAdapter = EditorPropertyAdapter()
+
+    private enum class EditorViewMode { TREE, PROPERTIES }
+
+    private var currentMode = EditorViewMode.TREE
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +39,7 @@ class EditorActivity : AppCompatActivity() {
         binding.filePairLabel.text = "Bağlı dosyalar:\n${project.uassetPath}\n${project.uexpPath}"
 
         setupLists()
+        setupViewMode()
 
         val propertyRows = if (project.content.isEmpty()) {
             defaultPropertyRows()
@@ -68,6 +75,31 @@ class EditorActivity : AppCompatActivity() {
                 .joinToString("\n") { "${it.name} = ${it.value}" }
             binding.previewOutput.text = "Canlı Önizleme:\n$top5"
         }
+    }
+
+
+
+    private fun setupViewMode() {
+        binding.treeTabButton.setOnClickListener {
+            setMode(EditorViewMode.TREE)
+        }
+
+        binding.propertyTabButton.setOnClickListener {
+            setMode(EditorViewMode.PROPERTIES)
+        }
+
+        setMode(EditorViewMode.TREE)
+    }
+
+    private fun setMode(mode: EditorViewMode) {
+        currentMode = mode
+
+        val treeVisible = mode == EditorViewMode.TREE
+        binding.treePanel.visibility = if (treeVisible) View.VISIBLE else View.GONE
+        binding.propertyPanel.visibility = if (treeVisible) View.GONE else View.VISIBLE
+
+        binding.treeTabButton.alpha = if (treeVisible) 1f else 0.65f
+        binding.propertyTabButton.alpha = if (treeVisible) 0.65f else 1f
     }
 
     private fun setupLists() {
