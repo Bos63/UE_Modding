@@ -2,22 +2,20 @@
 
 Bu sürümde uygulama **tek activity** olarak çalışır: `EditorActivity`.
 
-## Çalışma Klasörü
-Uygulama yalnızca şu klasör ile çalışır:
+## Dosya Açma (Android 11–15 uyumlu)
+Uygulama dosya erişimi için **Storage Access Framework (SAF)** kullanır.
 
-`/storage/emulated/0/Download/URAZMOD_UASSETGUİ`
+- `DOSYA AÇ` butonu → sistem dosya seçiciyi açar (`ACTION_OPEN_DOCUMENT`).
+- MIME: `*/*` (her dosya türü seçilebilir).
+- Seçilen dosya için kalıcı okuma izni alınır (`takePersistableUriPermission`).
+- Son seçilen URI SharedPreferences içine kaydedilir.
+- Dosya okuma `ContentResolver.openInputStream(uri)` üzerinden yapılır.
 
-- `DOSYA AÇ`: Bu klasördeki `.uasset` dosyalarını listeler.
-- Eşleşen `.uexp` yoksa dosya açılmaz.
-- Dump çıktısı aynı klasöre `<orijinal_ad>_dump.txt` olarak yazılır.
+> Not: Bu yaklaşımda Android ayarlar ekranında klasik "Dosyalar" runtime izni beklenmez. Erişim kullanıcı dosya seçtiğinde URI bazlı olarak verilir.
 
 ## Ekran Akışı
 - Uygulama açılır açılmaz editör ekranı gelir.
 - Login/Main ekranı yoktur.
-- Satır listesi gerçek dosya içeriğinden üretilir.
+- Satır listesi seçilen dosyadan üretilir.
 - Satıra tıklayınca değer düzenlenebilir.
 - NameMap düzenleme, karşılaştırma ve HEX EDITOR menüden erişilir.
-
-## Notlar
-- Düzenleme sırasında orijinal dosya için `.bak` yedek oluşturulur.
-- Büyük dosyalarda dump işlemi metin çıktısı üretir.

@@ -1,12 +1,18 @@
 package com.urzuasset.gui.ui.editor
 
 import android.app.AlertDialog
+import android.net.Uri
 import android.os.Bundle
+import android.provider.DocumentsContract
 import android.widget.EditText
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.urzuasset.gui.asset.AssetLineRecord
 import com.urzuasset.gui.asset.AssetPairData
 import com.urzuasset.gui.asset.AssetPairProcessor
 import com.urzuasset.gui.databinding.ActivityEditorBinding
@@ -14,13 +20,24 @@ import com.urzuasset.gui.databinding.DialogEditNamemapBinding
 import com.urzuasset.gui.databinding.DialogEditValueBinding
 import com.urzuasset.gui.databinding.DialogExtraFunctionsBinding
 import com.urzuasset.gui.databinding.ItemNamemapEntryBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class EditorActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditorBinding
     private var activePair: AssetPairData? = null
-    private val baseFolder = File("/storage/emulated/0/Download/URAZMOD_UASSETGUİ")
+    private val uriStorage by lazy { UriStorage(this) }
+
+    private val openFileLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) {
+            Toast.makeText(this, "Dosya seçilmedi", Toast.LENGTH_SHORT).show()
+            return@registerForActivityResult
+        }
+        onFilePicked(uri)
+    }
 
     private val lineAdapter = EditorLineAdapter { row ->
         showEditValueDialog(row)
@@ -40,7 +57,7 @@ class EditorActivity : AppCompatActivity() {
         })
 
         binding.openFileButton.setOnClickListener {
-            openUassetSelection()
+            openFileLauncher.launch(arrayOf("*/*"))
         }
 
         binding.dumpTxtButton.setOnClickListener {
@@ -60,7 +77,14 @@ class EditorActivity : AppCompatActivity() {
         binding.openFileButton.text = "DOSYA AÇ"
         binding.dumpTxtButton.text = "METNE DÖK (TXT)"
         binding.searchInput.hint = "🔍 Satır ara..."
-        binding.filePairLabel.text = "Henüz dosya açılmadı"
+
+        val lastUri = uriStorage.readLastUri()
+        binding.filePairLabel.text = if (lastUri != null) {
+            val hasPermission = PersistedPermissionChecker.hasReadPermission(this, lastUri)
+            "Son dosya: ${lastUri.lastPathSegment ?: lastUri} (${if (hasPermission) "erişim var" else "erişim yok"})"
+        } else {
+            "Henüz dosya açılmadı"
+        }
     }
 
     private fun setupList() {
@@ -68,61 +92,123 @@ class EditorActivity : AppCompatActivity() {
         binding.lineRecycler.adapter = lineAdapter
     }
 
-    private fun openUassetSelection() {
+    private fun onFilePicked(uri: Uri) {
         try {
-            if (!baseFolder.exists()) {
-                baseFolder.mkdirs()
-            }
-            val files = baseFolder.listFiles()?.filter { it.isFile && it.extension.equals("uasset", true) }
-                ?.sortedBy { it.name.lowercase() }
-                ?: emptyList()
-            if (files.isEmpty()) {
-                val onlyUexp = baseFolder.listFiles()?.any { it.isFile && it.extension.equals("uexp", true) } == true
-                val msg = if (onlyUexp) ".uasset olmadan .uexp tek başına okunamaz." else "Seçilecek .uasset bulunamadı"
-                Snackbar.make(binding.root, msg, Snackbar.LENGTH_LONG).show()
-                return
-            }
-            val names = files.map { it.name }.toTypedArray()
-            AlertDialog.Builder(this)
-                .setTitle(".uasset dosyası seç")
-                .setItems(names) { _, which ->
-                    loadPair(files[which])
+            contentResolver.takePersistableUriPermission(
+                uri,
+                android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+        } catch (_: Exception) {
+        }
+
+        uriStorage.saveLastUri(uri)
+
+        lifecycleScope.launch {
+            try {
+                val opened = withContext(Dispatchers.IO) {
+                    openFromUri(uri)
                 }
-                .setNegativeButton("İPTAL", null)
-                .show()
-        } catch (e: Exception) {
-            Snackbar.make(binding.root, "Dosya seçimi açılamadı: ${e.message}", Snackbar.LENGTH_LONG).show()
+                if (!opened) return@launch
+            } catch (e: Exception) {
+                Snackbar.make(binding.root, "Dosya okunamadı: ${e.message}", Snackbar.LENGTH_LONG).show()
+            }
         }
     }
 
-    private fun loadPair(selectedUasset: File) {
-        try {
-            val uexp = File(selectedUasset.parentFile, "${selectedUasset.nameWithoutExtension}.uexp")
-            if (!uexp.exists()) {
-                Snackbar.make(binding.root, "Aynı klasörde .uexp bulunamadı. .uasset okunmadı.", Snackbar.LENGTH_LONG).show()
-                return
-            }
+    private fun openFromUri(uri: Uri): Boolean {
+        val ext = guessExtension(uri)
 
-            val pairData = AssetPairProcessor.loadPair(selectedUasset, uexp)
-            activePair = pairData
-            val rows = pairData.records.map {
-                EditorLineRow(
-                    index = it.index,
-                    offsetHex = it.displayOffset,
-                    name = it.nameMapValue,
-                    type = it.type,
-                    value = it.value,
-                    sourceFilePath = it.sourceFilePath,
-                    absoluteOffset = it.absoluteOffset,
-                    reservedLength = it.reservedLength
-                )
+        if (ext.equals("uexp", true)) {
+            runOnUiThread {
+                Snackbar.make(binding.root, ".uasset olmadan .uexp tek başına okunamaz.", Snackbar.LENGTH_LONG).show()
             }
+            return false
+        }
+
+        val rawBytes = contentResolver.openInputStream(uri)?.use { it.readBytes() }
+        if (rawBytes == null) {
+            runOnUiThread {
+                Snackbar.make(binding.root, "Dosya okunamadı", Snackbar.LENGTH_LONG).show()
+            }
+            return false
+        }
+
+        runOnUiThread {
+            Toast.makeText(this, "Dosya okundu (${rawBytes.size} byte)", Toast.LENGTH_SHORT).show()
+        }
+
+        if (!ext.equals("uasset", true)) {
+            runOnUiThread {
+                binding.filePairLabel.text = "Dosya okundu: ${uri.lastPathSegment ?: uri}"
+            }
+            return true
+        }
+
+        val uexpUri = findSiblingUexp(uri)
+        if (uexpUri == null) {
+            runOnUiThread {
+                Snackbar.make(binding.root, "Aynı klasörde .uexp bulunamadı. .uasset okunmadı.", Snackbar.LENGTH_LONG).show()
+            }
+            return false
+        }
+
+        val uexpBytes = contentResolver.openInputStream(uexpUri)?.use { it.readBytes() }
+        if (uexpBytes == null) {
+            runOnUiThread {
+                Snackbar.make(binding.root, "Aynı klasörde .uexp bulunamadı. .uasset okunmadı.", Snackbar.LENGTH_LONG).show()
+            }
+            return false
+        }
+
+        val workingDir = File(cacheDir, "working_pair").apply { mkdirs() }
+        val uassetFile = File(workingDir, "selected.uasset").apply { writeBytes(rawBytes) }
+        val uexpFile = File(workingDir, "selected.uexp").apply { writeBytes(uexpBytes) }
+
+        val pairData = AssetPairProcessor.loadPair(uassetFile, uexpFile)
+        activePair = pairData
+        val rows = pairData.records.map {
+            EditorLineRow(
+                index = it.index,
+                offsetHex = it.displayOffset,
+                name = it.nameMapValue,
+                type = it.type,
+                value = it.value,
+                sourceFilePath = it.sourceFilePath,
+                absoluteOffset = it.absoluteOffset,
+                reservedLength = it.reservedLength
+            )
+        }
+
+        runOnUiThread {
             lineAdapter.submit(rows)
             binding.filePairLabel.text = "Toplam ${rows.size} satır yüklendi"
             Snackbar.make(binding.root, "Toplam ${rows.size} satır yüklendi", Snackbar.LENGTH_LONG).show()
-        } catch (e: Exception) {
-            Snackbar.make(binding.root, "Dosya okunamadı: ${e.message}", Snackbar.LENGTH_LONG).show()
         }
+        return true
+    }
+
+    private fun findSiblingUexp(uri: Uri): Uri? {
+        return try {
+            if (!DocumentsContract.isDocumentUri(this, uri)) return null
+            val docId = DocumentsContract.getDocumentId(uri)
+            val split = docId.split(":", limit = 2)
+            if (split.size != 2) return null
+            val relativePath = split[1]
+            if (!relativePath.lowercase().endsWith(".uasset")) return null
+            val siblingDocId = split[0] + ":" + relativePath.substringBeforeLast('.') + ".uexp"
+            val sibling = DocumentsContract.buildDocumentUri(uri.authority, siblingDocId)
+            contentResolver.openInputStream(sibling)?.use { }
+            sibling
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun guessExtension(uri: Uri): String {
+        val seg = uri.lastPathSegment.orEmpty()
+        val fromPath = seg.substringAfterLast('.', "")
+        if (fromPath.isNotEmpty()) return fromPath
+        return ""
     }
 
     private fun dumpTxt() {
@@ -132,7 +218,8 @@ class EditorActivity : AppCompatActivity() {
                 Snackbar.make(binding.root, "Önce .uasset dosyası açın", Snackbar.LENGTH_LONG).show()
                 return
             }
-            val outFile = File(baseFolder, "${pairData.uassetFile.nameWithoutExtension}_dump.txt")
+            val outputDir = File(getExternalFilesDir(null), "exports").apply { mkdirs() }
+            val outFile = File(outputDir, "selected_dump.txt")
             AssetPairProcessor.writeDumpTxt(pairData, outFile)
             Snackbar.make(binding.root, "Dump tamamlandı: ${outFile.absolutePath}", Snackbar.LENGTH_LONG).show()
         } catch (e: Exception) {
@@ -143,14 +230,6 @@ class EditorActivity : AppCompatActivity() {
     private fun showExtraFunctionsDialog() {
         val dialogBinding = DialogExtraFunctionsBinding.inflate(layoutInflater)
         val dialog = AlertDialog.Builder(this).setView(dialogBinding.root).create()
-
-        dialogBinding.compareUassetButton.text = ".uasset Karşılaştır"
-        dialogBinding.compareUexpButton.text = ".uexp Karşılaştır"
-        dialogBinding.editNamemapButton.text = "NameMap Düzenle"
-        dialogBinding.hexEditorButton.text = "HEX EDITOR"
-        dialogBinding.editAimbotButton.text = "AİMBOT 1"
-        dialogBinding.sekmme2Button.text = "SEKMME 2"
-        dialogBinding.clorBody3Button.text = "CLOR BODY 3"
 
         dialogBinding.compareUassetButton.setOnClickListener {
             dialog.dismiss()
@@ -191,12 +270,12 @@ class EditorActivity : AppCompatActivity() {
                 return
             }
             val source = if (extension == "uasset") pair.uassetFile else pair.uexpFile
-            val target = File(baseFolder, source.name)
-            if (!target.exists()) {
-                Snackbar.make(binding.root, "Karşılaştırma için aynı isimli dosya bulunamadı", Snackbar.LENGTH_LONG).show()
+            val backup = File(source.parentFile, "${source.name}.bak")
+            if (!backup.exists()) {
+                Snackbar.make(binding.root, "Karşılaştırma için yedek bulunamadı", Snackbar.LENGTH_LONG).show()
                 return
             }
-            val same = source.readBytes().contentEquals(target.readBytes())
+            val same = source.readBytes().contentEquals(backup.readBytes())
             Snackbar.make(binding.root, if (same) "Dosyalar birebir aynı" else "Dosyalar farklı", Snackbar.LENGTH_LONG).show()
         } catch (e: Exception) {
             Snackbar.make(binding.root, "Karşılaştırma hatası: ${e.message}", Snackbar.LENGTH_LONG).show()
@@ -263,7 +342,7 @@ class EditorActivity : AppCompatActivity() {
             try {
                 val newValue = dialogBinding.editValueInput.text?.toString().orEmpty()
                 AssetPairProcessor.writeUpdatedValue(
-                    record = com.urzuasset.gui.asset.AssetLineRecord(
+                    record = AssetLineRecord(
                         index = row.index,
                         displayOffset = row.offsetHex,
                         nameMapValue = row.name,
@@ -301,7 +380,6 @@ class EditorActivity : AppCompatActivity() {
         dialogBinding.namemapRecycler.layoutManager = LinearLayoutManager(this)
         dialogBinding.namemapRecycler.adapter = adapter
         dialogBinding.namemapTitle.text = "NAMEMAP DÜZENLE (${allEntries.size})"
-        dialogBinding.closeNamemapButton.text = "KAYDET"
 
         dialogBinding.namemapSearch.addTextChangedListener(SimpleTextWatcher {
             val q = dialogBinding.namemapSearch.text?.toString().orEmpty().trim().lowercase()
@@ -312,7 +390,8 @@ class EditorActivity : AppCompatActivity() {
 
         dialogBinding.closeNamemapButton.setOnClickListener {
             try {
-                val file = File(baseFolder, "${pair.uassetFile.nameWithoutExtension}_namemap.txt")
+                val outputDir = File(getExternalFilesDir(null), "exports").apply { mkdirs() }
+                val file = File(outputDir, "selected_namemap.txt")
                 file.writeText(adapter.items().joinToString("\n"))
                 dialog.dismiss()
                 Snackbar.make(binding.root, "NameMap kaydedildi", Snackbar.LENGTH_SHORT).show()
