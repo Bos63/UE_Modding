@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body { @apply bg-[#050b2a] text-white; }
+
+.panel-card {
+  @apply bg-[#1a2248] rounded-2xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.35)];
+}
+
+.panel-mini {
+  @apply bg-[#131b3f] rounded-xl px-4 py-3 text-sm shadow-[0_6px_20px_rgba(0,0,0,0.25)];
+}
+
+.panel-input {
+  @apply w-full bg-[#f2f3f5] text-[#222] rounded-xl px-4 py-2 outline-none;
+}
+
+.panel-button {
+  @apply bg-[#18b7ff] hover:bg-[#0ea5e9] text-white rounded-xl px-4 py-2;
+}
+
+.panel-button-outline {
+  @apply border border-[#18b7ff] text-[#8ddcff] rounded-xl px-4 py-2 bg-transparent hover:bg-[#18b7ff]/10;
+}
+
+.panel-delete {
+  @apply bg-red-500/20 text-red-300 rounded-lg px-3 py-1 hover:bg-red-500/30;
+}

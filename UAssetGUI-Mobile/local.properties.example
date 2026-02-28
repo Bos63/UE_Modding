@@ -1,0 +1,9 @@
+## Copy this file to local.properties and update sdk.dir for your machine.
+## Windows example:
+## sdk.dir=C\\:\\Users\\<user>\\AppData\\Local\\Android\\Sdk
+## macOS example:
+## sdk.dir=/Users/<user>/Library/Android/sdk
+## Linux example:
+## sdk.dir=/home/<user>/Android/Sdk
+
+sdk.dir=/path/to/Android/Sdk
