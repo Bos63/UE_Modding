@@ -1,7 +1,7 @@
 {
   "name": "uassetgui-key-panel",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.0.1",
   "workspaces": [
     "server",
     "web"
@@ -9,11 +9,8 @@
   "scripts": {
     "dev": "npm run dev -w server",
     "dev:web": "npm run dev -w web",
-    "dev:all": "concurrently \"npm run dev -w server\" \"npm run dev -w web\"",
+    "dev:all": "sh -c 'npm run dev -w server & npm run dev -w web & wait'",
     "build": "npm run build -w web",
     "start": "npm run start -w server"
-  },
-  "devDependencies": {
-    "concurrently": "^9.0.1"
   }
 }

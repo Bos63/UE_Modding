@@ -1,11 +1,11 @@
-import bcrypt from 'bcryptjs';
 import { AdminModel } from '../models/Admin.js';
 import { RemoteConfigModel } from '../models/RemoteConfig.js';
+import { hashToken } from './tokenHash.js';
 
 export async function ensureBootstrapAdmin(token) {
   const count = await AdminModel.countDocuments();
   if (count > 0) return;
-  const hash = await bcrypt.hash(token, 10);
+  const hash = hashToken(token);
   await AdminModel.create({ username: 'bootstrap', passwordHash: hash, role: 'SuperAdmin' });
 }
 
