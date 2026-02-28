@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#111A2E"
+    android:orientation="horizontal"
+    android:paddingVertical="4dp">
+
+    <TextView
+        android:id="@+id/rowIndex"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.12"
+        android:paddingHorizontal="4dp"
+        android:textColor="#FFFFFF" />
+
+    <TextView
+        android:id="@+id/rowName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.33"
+        android:paddingHorizontal="4dp"
+        android:textColor="#FFFFFF" />
+
+    <TextView
+        android:id="@+id/rowType"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.23"
+        android:paddingHorizontal="4dp"
+        android:textColor="#9CC4FF" />
+
+    <TextView
+        android:id="@+id/rowVariant"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.15"
+        android:paddingHorizontal="4dp"
+        android:textColor="#9CC4FF" />
+
+    <EditText
+        android:id="@+id/rowValue"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.27"
+        android:background="@android:color/transparent"
+        android:inputType="textNoSuggestions"
+        android:paddingHorizontal="4dp"
+        android:singleLine="true"
+        android:textColor="#FFFFFF" />
+</LinearLayout>

@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.UAssetGUI" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/blue_bright</item>
+        <item name="colorSecondary">@color/purple_primary</item>
+        <item name="colorError">@color/red_accent</item>
+    </style>
+</resources>
